@@ -4,6 +4,8 @@
 #
 # Most parts of the script are written by GitHub Copilot.
 #
+# Heavily inspired by https://gist.github.com/mareksuscak/1f206fbc3bb9d97dec9c. Thanks!
+#
 
 
 CURRENT_BRANCH=`git branch --show-current`
