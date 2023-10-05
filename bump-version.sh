@@ -10,12 +10,15 @@
 
 CURRENT_BRANCH=`git branch --show-current`
 PROTECTED_BRANCH="main"
-
 LATEST_HASH=`git log --pretty=format:'%h' -n 1`
-
 TEMPFILE=`mktemp`
-
 CURRENT_VERSION=""
+RED="\033[31m"
+YELLOW="\033[33m"
+GREEN="\033[32m"
+BOLD="\033[1m"
+RESET="\033[0m"
+
 
 function bump_version () {
     # get the current version and raise the minor version number by one
@@ -44,8 +47,8 @@ function bump_version () {
 #
 if [[ $CURRENT_BRANCH != $PROTECTED_BRANCH ]]
 then
-    echo -e "\033[31mYou are not on the ${PROTECTED_BRANCH} branch.\033[0m"
-    echo -e "\033[31mExiting...\033[0m"
+    echo -e "${RED}You are not on the ${PROTECTED_BRANCH} branch.${RESET}"
+    echo -e "${RED}Exiting...${RESET}"
     exit 0
 fi
 
@@ -62,9 +65,9 @@ SUGGESTED_NEW_VERSION=`bump_version ${CURRENT_VERSION:-"0.0.1"}`
 #
 # Get the new version from the user.
 #
-echo -e "Latest commit hash: \033[1m${LATEST_HASH}\033[0m"
-echo -e "Current version: \033[1m${CURRENT_VERSION}\033[0m"
-echo -en "Enter a version number [\033[1m${SUGGESTED_NEW_VERSION}\033[0m]: "
+echo -e "Latest commit hash: ${BOLD}${LATEST_HASH}${RESET}"
+echo -e "Current version: ${BOLD}${CURRENT_VERSION}${RESET}"
+echo -en "Enter a version number [${BOLD}${SUGGESTED_NEW_VERSION}${RESET}]: "
 read RESPONSE
 if [[ $RESPONSE == "" ]]
 then
@@ -78,8 +81,8 @@ fi
 #
 if [[ $NEW_VERSION == $CURRENT_VERSION ]]
 then
-    echo -e "\033[31mNew version is the same as the current version.\033[0m"
-    echo -e "\033[31mExiting...\033[0m"
+    echo -e "${RED}New version is the same as the current version.${RESET}"
+    echo -e "${RED}Exiting...${RESET}"
     exit 0
 fi
 
@@ -88,17 +91,17 @@ fi
 #
 if [[ ! $NEW_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
 then
-    echo -e "\033[31mInvalid version string.\033[0m"
-    echo -e "\033[31mExiting...\033[0m"
+    echo -e "${RED}Invalid version string.${RESET}"
+    echo -e "${RED}Exiting...${RESET}"
     exit 0
 fi
 
-echo -e "\033[33mWill set new version to be ${NEW_VERSION}\033[0m"
+echo -e "${YELLOW}Will set new version to be ${NEW_VERSION}${RESET}"
 
 #
 # Set the git tag to "v<version>".
 #
-echo -e "\033[33mTagging version ${NEW_VERSION}...\033[0m"
+echo -e "${YELLOW}Tagging version ${NEW_VERSION}...${RESET}"
 GIT_TAG="v${NEW_VERSION}"
 
 #
@@ -106,15 +109,15 @@ GIT_TAG="v${NEW_VERSION}"
 #
 if [[ `git tag -l "${GIT_TAG}"` ]]
 then
-    echo -e "\033[31mTag ${GIT_TAG} already exists.\033[0m"
-    echo -e "\033[31mExiting...\033[0m"
+    echo -e "${RED}Tag ${GIT_TAG} already exists.${RESET}"
+    echo -e "${RED}Exiting...${RESET}"
     exit 0
 fi
 
 #
 # Update the VERSION file.
 #
-echo -e "\033[33mUpdating VERSION file...\033[0m"
+echo -e "${YELLOW}Updating VERSION file...${RESET}"
 echo "${NEW_VERSION}" > VERSION
 
 #
@@ -122,9 +125,9 @@ echo "${NEW_VERSION}" > VERSION
 #
 if [[ -f CHANGELOG.md ]]
 then
-    echo -e "\033[33mUpdating CHANGELOG.md file...\033[0m"
+    echo -e "${YELLOW}Updating CHANGELOG.md file...${RESET}"
 else
-    echo -e "\033[33mCreating CHANGELOG.md file...\033[0m"
+    echo -e "${YELLOW}Creating CHANGELOG.md file...${RESET}"
     touch CHANGELOG.md
 fi
 
@@ -159,16 +162,16 @@ git add VERSION CHANGELOG.md
 # Commit the changes.
 #
 echo "Committing the changes..."
-git commit -m "Bump version to ${NEW_VERSION}." && echo -e "\033[32mSuccess: Changes committed.\033[0m" || echo -e "\033[31mError: Failed to commit changes.\033[0m"
-git push origin && echo -e "\033[32mSuccess: Changes pushed to origin.\033[0m" || echo -e "\033[31mError: Failed to push changes to origin.\033[0m"
+git commit -m "Bump version to ${NEW_VERSION}." && echo -e "${GREEN}Success: Changes committed.${RESET}" || echo -e "${RED}Error: Failed to commit changes.${RESET}"
+git push origin && echo -e "${GREEN}Success: Changes pushed to origin.${RESET}" || echo -e "${RED}Error: Failed to push changes to origin.${RESET}"
 
 #
 # Tag the current commit.
 #
-git tag -a $GIT_TAG -m "Tag version ${NEW_VERSION}." && echo -e "\033[32mSuccess: Tagged version ${NEW_VERSION}.\033[0m" || echo -e "\033[31mError: Failed to tag version ${NEW_VERSION}.\033[0m"
-git push origin --tags && echo -e "\033[32mSuccess: Pushed tags to origin.\033[0m" || echo -e "\033[31mError: Failed to push tags to origin.\033[0m"
+git tag -a $GIT_TAG -m "Tag version ${NEW_VERSION}." && echo -e "${GREEN}Success: Tagged version ${NEW_VERSION}.${RESET}" || echo -e "${RED}Error: Failed to tag version ${NEW_VERSION}.${RESET}"
+git push origin --tags && echo -e "${GREEN}Success: Pushed tags to origin.${RESET}" || echo -e "${RED}Error: Failed to push tags to origin.${RESET}"
 
 #
 # Done.
 #
-echo -e "\033[32mDone.\033[0m"
+echo -e "${GREEN}Done.${RESET}"
