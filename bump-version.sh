@@ -8,6 +8,9 @@
 #
 
 
+# Allow the same version to be set.
+ALLOW_SAME_VERSION="true"
+
 CURRENT_BRANCH=`git branch --show-current`
 PROTECTED_BRANCH="main"
 LATEST_HASH=`git log --pretty=format:'%h' -n 1`
@@ -18,7 +21,6 @@ YELLOW="\033[33m"
 GREEN="\033[32m"
 BOLD="\033[1m"
 RESET="\033[0m"
-
 
 function bump_version () {
     # get the current version and raise the minor version number by one
@@ -79,7 +81,7 @@ fi
 #
 # Check if the new version is the same as the current version.
 #
-if [[ $NEW_VERSION == $CURRENT_VERSION ]]
+if [[ $NEW_VERSION == $CURRENT_VERSION ]] && [[ $ALLOW_SAME_VERSION != "true" ]]
 then
     echo -e "${RED}New version is the same as the current version.${RESET}"
     echo -e "${RED}Exiting...${RESET}"
@@ -139,7 +141,7 @@ echo "## ${NEW_VERSION} (`date +%Y-%m-%d`)" > $TEMPFILE
 if [[ `git tag -l "v${CURRENT_VERSION}"` ]]
 then
     echo -en "\nChanges:\n\n" >> $TEMPFILE
-    git log --pretty=format:" - %s (%an)" "v${CURRENT_VERSION}...HEAD" >> $TEMPFILE
+    git log --pretty=format:" - %s (%an)" "$(git tag | tail -n1)...HEAD" >> $TEMPFILE
 fi
 
 echo "" >> $TEMPFILE
